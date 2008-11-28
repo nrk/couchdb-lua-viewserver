@@ -5,6 +5,7 @@ local funs, map_results, handlers = {}, {}, {}
 
 local function output(data)
     io.stdout:write(json.encode(data), "\n")
+    io.flush()
 end
 
 function log(message)
