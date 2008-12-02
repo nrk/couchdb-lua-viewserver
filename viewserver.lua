@@ -110,10 +110,10 @@ local function map_doc(doc)
     return { results }
 end
 
-local function reduce(reduce_funs, arguments, ...)
+local function reduce(reduce_funs, arguments, rereduce)
     local keys, values, reductions = {}, {}, {}
 
-    if arg.n == 0 then
+    if not rereduce then
         for _, kv in ipairs(arguments) do
             table.insert(keys, kv[1])
             table.insert(values, kv[2])
@@ -123,7 +123,7 @@ local function reduce(reduce_funs, arguments, ...)
     end
 
     for i, reduce_fun_src in ipairs(reduce_funs) do 
-        local successful, result = exec(compile(reduce_fun_src), keys, values, (arg[1] or nil))
+        local successful, result = exec(compile(reduce_fun_src), keys, values, rereduce)
         if not successful then result = nil end
         table.insert(reductions, i, result) 
     end
