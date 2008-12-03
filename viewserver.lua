@@ -63,7 +63,7 @@ local function exec(fun, ...)
             if result.error.id == 'fatal_error' then
                 error(cdb_error('map_runtime_error', 'function raised fatal exception'))
             else
-                log('function raised exception (' .. result.error.reason .. ')')
+                log('function raised exception (' .. result.error.reason .. ') with doc._id ' .. doc._id)
             end
         else
             log('function raised exception (' .. (result or 'unknown') .. ')')
