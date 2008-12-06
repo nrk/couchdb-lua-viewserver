@@ -135,7 +135,20 @@ local function rereduce(reduce_funs, arguments)
     return reduce(reduce_funs, arguments, true)
 end
 
-handlers = { reset = reset, add_fun = add_fun, map_doc = map_doc, reduce = reduce, rereduce = rereduce }
+local function validate(fun_source, new_doc, old_doc, user_ctx)
+	compile(fun_source)(new_doc, old_doc, user_ctx)
+	return 1
+end
+
+
+handlers = { 
+	reset    = reset, 
+	add_fun  = add_fun, 
+	map_doc  = map_doc, 
+	reduce   = reduce, 
+	rereduce = rereduce,
+	validate = validate,
+}
 
 
 -- ************************************ --
