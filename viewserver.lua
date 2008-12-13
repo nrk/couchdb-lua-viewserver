@@ -3,24 +3,6 @@ local json = require 'json'
 
 local funs, map_results, handlers = {}, {}, {}
 
-local function output(data)
-    io.stdout:write(json.encode(data), "\n")
-    io.flush()
-end
-
-function log(message)
-    output({ log = message })
-end
-
-function emit(key, value)
-    map_results = { key, value }
-end
-
-function sum(values)
-    local sum = 0
-    for _, v in pairs(values) do sum = sum + v end
-    return sum
-end
 
 local function slice(list, offset, length)
     local slice  = {}
@@ -28,6 +10,11 @@ local function slice(list, offset, length)
     local to = offset + length - 1
     for i = offset, to do slice[#slice + 1] = list[i] end
     return slice
+end
+
+local function output(data)
+    io.stdout:write(json.encode(data), "\n")
+    io.flush()
 end
 
 local function cdb_error(id, message)
@@ -82,6 +69,24 @@ local function handle_command(cmd)
     else
         return cdb_error('query_server_error', 'unknown command ' .. cmd[1])
     end
+end
+
+
+-- ********* functions accessible from views ********* -
+
+
+function log(message)
+    output({ log = message })
+end
+
+function emit(key, value)
+    map_results = { key, value }
+end
+
+function sum(values)
+    local sum = 0
+    for _, v in pairs(values) do sum = sum + v end
+    return sum
 end
 
 
