@@ -36,9 +36,9 @@ local function compile(source)
     if successful and type(result) == 'function' then 
         return result 
     elseif not successful then
-        error(cdb_error('compilation_error', result))
+        raise('compilation_error', result)
     else
-        error(cdb_error('compilation_error', string.format('expression does not eval to a function (%s)', source)))
+        raise('compilation_error', string.format('expression does not eval to a function (%s)', source))
     end
 end
 
@@ -48,7 +48,7 @@ local function exec(fun, ...)
     if not successful then 
         if result ~= nil and type(result.error) ~= "function" then 
             if result.error.id == 'fatal_error' then
-                error(cdb_error('map_runtime_error', 'function raised fatal exception'))
+                raise('map_runtime_error', 'function raised fatal exception')
             else
                 --log('function raised exception (' .. result.error.reason .. ') with doc._id ' .. doc._id)
                 log('function raised exception (' .. result.error.reason .. ')')
