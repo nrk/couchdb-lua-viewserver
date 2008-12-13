@@ -76,6 +76,14 @@ end
 -- ********* functions accessible from views ********* -
 
 
+function raise(id, message)
+    error(cdb_error(id, message))
+end
+
+function raise_fatal(message)
+    raise("fatal_error", message)
+end
+
 function log(message)
     output({ log = message })
 end
