@@ -1,5 +1,6 @@
 require 'luarocks.require'
 local json = require 'json'
+require 'base'
 
 local funs, map_results, handlers = {}, {}, {}
 
@@ -26,6 +27,10 @@ local function cdb_error(id, message)
     }
 end
 
+local function exception(id, message)
+    error(cdb_error(id, message))
+end
+
 local function eval(src)
     return loadstring("return " .. src)()
 end
@@ -36,9 +41,9 @@ local function compile(source)
     if successful and type(result) == 'function' then 
         return result 
     elseif not successful then
-        raise('compilation_error', result)
+        exception('compilation_error', result)
     else
-        raise('compilation_error', string.format('expression does not eval to a function (%s)', source))
+        exception('compilation_error', string.format('expression does not eval to a function (%s)', source))
     end
 end
 
@@ -47,11 +52,11 @@ local function exec(fun, ...)
 
     if not successful then 
         if result ~= nil and type(result.error) ~= "function" then 
-            if result.error.id == 'fatal_error' then
-                raise('map_runtime_error', 'function raised fatal exception')
+            if result.error.message == 'fatal_error' then
+                exception('map_runtime_error', 'function raised fatal exception')
             else
                 --log('function raised exception (' .. result.error.reason .. ') with doc._id ' .. doc._id)
-                log('function raised exception (' .. result.error.reason .. ')')
+                log('function raised exception (' .. result.error.message .. ')')
             end
         else
             log('function raised exception (' .. (result or 'unknown') .. ')')
@@ -76,12 +81,12 @@ end
 -- ********* functions accessible from views ********* -
 
 
-function raise(id, message)
-    error(cdb_error(id, message))
+function raise(message)
+    error({ error = { message = message }})
 end
 
-function raise_fatal(message)
-    raise("fatal_error", message)
+function raise_fatal()
+    raise("fatal_error")
 end
 
 function log(message)
