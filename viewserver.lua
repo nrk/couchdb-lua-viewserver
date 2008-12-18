@@ -1,6 +1,5 @@
 require 'luarocks.require'
 local json = require 'json'
-require 'base'
 
 local funs, map_results, handlers = {}, {}, {}
 
