@@ -46,16 +46,13 @@ local function compile(source)
     end
 end
 
-local function exec(fun, ...)
-    local successful, result = pcall(fun, unpack(arg))
+local function exec(fun, handle_raised_error, ...)
+    local successful, result = pcall(fun, ...)
 
-    if not successful then 
-        if result ~= nil and type(result.error) ~= "function" then 
-            if result.error.message == 'fatal_error' then
-                exception('map_runtime_error', 'function raised fatal exception')
-            else
-                --log('function raised exception (' .. result.error.reason .. ') with doc._id ' .. doc._id)
-                log('function raised exception (' .. result.error.message .. ')')
+    if not successful then
+        if result ~= nil and type(result.error) ~= "function" then
+            if handle_raised_error ~= nil then
+                handle_raised_error(result, ...)
             end
         else
             log('function raised exception (' .. (result or 'unknown') .. ')')
@@ -63,6 +60,30 @@ local function exec(fun, ...)
     end
 
     return successful, result
+end
+
+local function exec_map_fun(fun, ...)
+    local error_handler = function(result, doc)
+        if result.error.message == 'fatal_error' then
+            exception('map_runtime_error', 'function raised fatal exception')
+        else
+            log('function raised exception (' .. result.error.message .. ') with doc._id ' .. doc._id)
+        end
+    end
+
+    return exec(fun, error_handler, ...)
+end
+
+local function exec_reduce_fun(fun, ...)
+    local error_handler = function(result)
+        if result.error.message == 'fatal_error' then
+            exception('reduce_runtime_error', 'function raised fatal exception')
+        else
+            log('function raised exception (' .. result.error.message .. ')')
+        end
+    end
+
+    return exec(fun, error_handler, ...)
 end
 
 local function handle_command(cmd)
@@ -121,7 +142,7 @@ local function map_doc(doc)
 
     for _, fun in pairs(funs) do
         map_results = {}
-        local successful = exec(fun, doc)
+        local successful = exec_map_fun(fun, doc)
         if successful then table.insert(results, map_results) else map_results = {} end
     end
 
@@ -141,7 +162,7 @@ local function reduce(reduce_funs, arguments, rereduce)
     end
 
     for i, reduce_fun_src in ipairs(reduce_funs) do 
-        local successful, result = exec(compile(reduce_fun_src), keys, values, rereduce)
+        local successful, result = exec_reduce_fun(compile(reduce_fun_src), keys, values, rereduce)
         if not successful then result = nil end
         table.insert(reductions, i, result) 
     end
